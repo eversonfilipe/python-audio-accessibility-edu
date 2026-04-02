@@ -1,0 +1,374 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Sistema de acessibilidade educacional auditiva para estudantes com deficiência visual — Programa Trilha TEC, Florescendo Talentos, CESAR SCHOOL.">
+    <meta name="theme-color" content="#000000">
+    <title>Acessibilidade Educacional — Trilha TEC</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
+</head>
+<body>
+
+    <!-- Skip Link — Acessibilidade: pular direto para o conteúdo -->
+    <a href="#main-content" class="skip-link" id="skip-link">
+        Pular para o conteúdo principal
+    </a>
+
+    <!-- Overlay de Desbloqueio de Audio (Protecao Autoplay do Navegador) -->
+    <!-- Justificativa: Browsers modernos bloqueiam a Web Speech API ate que ocorra uma acao ativa do usuario (Interacao com o Documento). -->
+    <!-- Este elemento garante a permissao de reproducao logo na entrada da aplicacao. -->
+    <div id="audio-unlock-overlay" style="position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: #000; z-index: 99999; display: flex; flex-direction: column; justify-content: center; align-items: center; cursor: pointer; color: #FFD700; text-align: center;" aria-label="Tela de inicializacao requerida para desbloqueio sonoro">
+        <h1 style="font-size: 3rem; margin: 0 2rem;">Sistema Pronto</h1>
+        <p style="font-size: 1.5rem; color: #FFF; margin-top: 1rem;">Clique em qualquer lugar ou aperte ENTER para Desbloquear a Voz da Interface.</p>
+        <button id="btn-unlock-audio" class="btn btn--primary" style="margin-top: 3rem; font-size: 1.5rem; padding: 1rem 3rem;" aria-label="Desbloquear o audio do sistema">ATIVAR AUDIO E ENTRAR</button>
+    </div>
+
+    <script>
+        /*
+         * Interceptador de permissao da Web Speech API.
+         * Aguarda o primeiro clique para despachar uma sub-rotina sintetica velada
+         * instanciando e validando o contexto de som local para usos subsequentes do Voice.
+         */
+        document.addEventListener("DOMContentLoaded", () => {
+            const overlay = document.getElementById("audio-unlock-overlay");
+            const btn = document.getElementById("btn-unlock-audio");
+            
+            const unlockAudio = () => {
+                overlay.style.display = "none";
+                // Engana o navegador disparando um TTS mudo/curto instantâneo só para destrancar a permissão
+                if('speechSynthesis' in window) {
+                    let utterance = new SpeechSynthesisUtterance("Bem-vindo ao Trilha TEC.");
+                    utterance.lang = "pt-BR";
+                    utterance.volume = 1; /* Audível */
+                    window.speechSynthesis.speak(utterance);
+                }
+            };
+
+            overlay.addEventListener("click", unlockAudio);
+            btn.addEventListener("click", (e) => {
+                e.stopPropagation();
+                unlockAudio();
+            });
+            document.addEventListener("keydown", (e) => {
+                if(overlay.style.display !== "none" && (e.key === "Enter" || e.code === "Space")) {
+                    unlockAudio();
+                }
+            });
+        });
+    </script>
+
+    <!-- ========================================================
+         ARIA Live Regions — Anúncios para leitores de tela
+         ======================================================== -->
+    <div id="aria-status" class="aria-status" role="status" aria-live="polite" aria-atomic="true"></div>
+    <div id="aria-alert" class="aria-status" role="alert" aria-live="assertive" aria-atomic="true"></div>
+
+    <!-- Feedback visual centralizado para Gravacao de Voz -->
+    <div id="recording-overlay" style="display: none; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0,0,0,0.85); z-index: 9999; justify-content: center; align-items: center; flex-direction: column; color: #fff; font-size: 2.5rem; text-align: center;" aria-hidden="true">
+        <strong>GRAVANDO AUDIO</strong>
+        <p style="font-size: 1.5rem; margin-top: 1rem; color: #ccc;">Fale sua instrucao em voz alta...</p>
+    </div>
+    
+    <style>
+        @keyframes pulse {
+            0% { transform: scale(1); opacity: 1; }
+            50% { transform: scale(1.2); opacity: 0.7; color: var(--accent); }
+            100% { transform: scale(1); opacity: 1; }
+        }
+    </style>
+
+    <!-- ========================================================
+         HEADER
+         ======================================================== -->
+    <header class="app-header" role="banner">
+        <div class="app-header__title">
+            <span class="app-header__title-icon" aria-hidden="true">📚</span>
+            <h1>Acessibilidade Educacional</h1>
+        </div>
+        <div class="app-header__lesson-info" id="header-lesson-info">
+            Programa Trilha TEC — Florescendo Talentos
+        </div>
+    </header>
+
+    <!-- ========================================================
+         NAVIGATION — Controles TTS + Seletor de Aula
+         ======================================================== -->
+    <nav class="app-nav" role="navigation" aria-label="Controles do sistema">
+
+        <!-- Grupo: Seletor de Aula -->
+        <div class="nav-group">
+            <label class="nav-group__label" for="lesson-select" id="lesson-select-label">Aula:</label>
+            <select
+                class="select-accessible"
+                id="lesson-select"
+                aria-labelledby="lesson-select-label"
+                aria-describedby="lesson-select-help"
+            >
+                <option value="">Selecione uma aula...</option>
+            </select>
+            <span id="lesson-select-help" class="sr-only">
+                Use as setas para navegar entre as aulas disponíveis.
+            </span>
+        </div>
+
+        <!-- Grupo: Controles TTS -->
+        <div class="nav-group">
+            <span class="nav-group__label" id="tts-controls-label">Narração:</span>
+            <div role="toolbar" aria-labelledby="tts-controls-label">
+                <button
+                    class="btn btn--primary btn--icon"
+                    id="btn-tts-play"
+                    aria-label="Iniciar narração"
+                    title="Iniciar narração (Espaço)"
+                >
+                    ▶
+                </button>
+                <button
+                    class="btn btn--secondary btn--icon"
+                    id="btn-tts-pause"
+                    aria-label="Pausar narração"
+                    title="Pausar narração (Espaço)"
+                    disabled
+                >
+                    ⏸
+                </button>
+                <button
+                    class="btn btn--secondary btn--icon"
+                    id="btn-tts-stop"
+                    aria-label="Parar narração"
+                    title="Parar narração (S)"
+                    disabled
+                >
+                    ⏹
+                </button>
+            </div>
+        </div>
+
+        <!-- Grupo: Velocidade TTS -->
+        <div class="nav-group">
+            <span class="nav-group__label" id="speed-label">Velocidade:</span>
+            <div role="group" aria-labelledby="speed-label">
+                <button
+                    class="btn btn--secondary btn--icon"
+                    id="btn-speed-down"
+                    aria-label="Diminuir velocidade da narração"
+                    title="Diminuir velocidade (tecla menos)"
+                >
+                    −
+                </button>
+                <span class="speed-indicator" id="speed-indicator" aria-live="polite">1.0×</span>
+                <button
+                    class="btn btn--secondary btn--icon"
+                    id="btn-speed-up"
+                    aria-label="Aumentar velocidade da narração"
+                    title="Aumentar velocidade (tecla mais)"
+                >
+                    +
+                </button>
+            </div>
+        </div>
+
+        <!-- Grupo: Tamanho da Fonte -->
+        <div class="nav-group">
+            <span class="nav-group__label" id="font-label">Fonte:</span>
+            <div role="group" aria-labelledby="font-label">
+                <button
+                    class="btn btn--secondary btn--icon"
+                    id="btn-font-down"
+                    aria-label="Diminuir tamanho da fonte"
+                    title="Diminuir fonte (Shift+F)"
+                >
+                    A−
+                </button>
+                <span class="speed-indicator" id="font-indicator" aria-live="polite">1.25×</span>
+                <button
+                    class="btn btn--secondary btn--icon"
+                    id="btn-font-up"
+                    aria-label="Aumentar tamanho da fonte"
+                    title="Aumentar fonte (F)"
+                >
+                    A+
+                </button>
+            </div>
+        </div>
+
+        <!-- Status TTS -->
+        <div class="nav-group">
+            <span class="tts-status tts-status--idle" id="tts-status" aria-live="polite">
+                Pronto
+            </span>
+        </div>
+    </nav>
+
+    <!-- ========================================================
+         MAIN CONTENT
+         ======================================================== -->
+    <main class="main-content" id="main-content" role="main" aria-label="Conteúdo da aula">
+
+        <!-- Tela de Boas-Vindas (antes de selecionar aula) -->
+        <section class="welcome-screen" id="welcome-screen" aria-labelledby="welcome-title">
+            <div class="welcome-screen__icon" aria-hidden="true">🎓</div>
+            <h2 class="welcome-screen__title" id="welcome-title">
+                Bem-vindo ao Sistema de Acessibilidade Educacional
+            </h2>
+            <p class="welcome-screen__subtitle">
+                Este sistema foi criado para tornar o aprendizado de programação acessível.
+                Selecione uma aula acima ou escolha uma das opções abaixo para começar.
+            </p>
+            <p class="welcome-screen__subtitle">
+                <strong>Dica:</strong> Pressione <kbd>H</kbd> a qualquer momento para ouvir os atalhos de teclado.
+            </p>
+            <div class="lesson-cards" id="lesson-cards" aria-label="Aulas disponíveis">
+                <!-- Cards de aulas são inseridos aqui via JavaScript -->
+            </div>
+        </section>
+
+        <!-- Área de Slide (oculta até selecionar uma aula) -->
+        <section class="slide-container" id="slide-container" style="display: none;" aria-labelledby="slide-title-heading">
+
+            <!-- Cabeçalho do Slide -->
+            <div class="slide-header">
+                <span class="slide-number" id="slide-number" aria-label="Número do slide">
+                    Slide 1 de 1
+                </span>
+                <h2 class="slide-title" id="slide-title-heading">
+                    Título do Slide
+                </h2>
+            </div>
+
+            <!-- Barra de Progresso -->
+            <div class="progress-bar" role="progressbar" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100" id="progress-bar" aria-label="Progresso da aula">
+                <div class="progress-bar__fill" id="progress-fill" style="width: 0%;"></div>
+            </div>
+
+            <!-- Conteúdo do Slide -->
+            <article class="slide-card" id="slide-card" aria-label="Conteúdo do slide">
+                <div class="slide-card__text" id="slide-content">
+                    <!-- Conteúdo é inserido via JavaScript -->
+                </div>
+
+                <!-- Bloco de Código (opcional, exibido se o slide tiver código) -->
+                <div class="code-block" id="code-block" style="display: none;" aria-label="Bloco de código">
+                    <div class="code-block__header">
+                        <span class="code-block__label" aria-hidden="true">💻 Código Python</span>
+                        <button
+                            class="btn btn--secondary code-block__read-btn"
+                            id="btn-read-code"
+                            aria-label="Ler código em voz alta"
+                            title="Ler código (C)"
+                        >
+                            🔊 Ler Código
+                        </button>
+                    </div>
+                    <pre id="code-content" tabindex="0" role="region" aria-label="Código fonte"><code></code></pre>
+                </div>
+
+                <!-- Descrição do Código -->
+                <div class="code-description" id="code-description" style="display: none;">
+                    <span class="code-description__label">📝 Descrição do código:</span>
+                    <span id="code-description-text"></span>
+                </div>
+            </article>
+
+            <!-- Navegação dos Slides -->
+            <nav class="slide-nav" aria-label="Navegação entre slides">
+                <button
+                    class="btn btn--secondary"
+                    id="btn-prev-slide"
+                    aria-label="Slide anterior"
+                    title="Slide anterior (seta esquerda)"
+                >
+                    ← Anterior
+                </button>
+
+                <span class="slide-nav__indicator" id="slide-indicator" aria-live="polite">
+                    Slide 1 de 1
+                </span>
+
+                <button
+                    class="btn btn--primary"
+                    id="btn-next-slide"
+                    aria-label="Próximo slide"
+                    title="Próximo slide (seta direita)"
+                >
+                    Próximo →
+                </button>
+            </nav>
+
+            <!-- Botão de leitura completa -->
+            <div style="text-align: center; margin-top: var(--spacing-md);">
+                <button
+                    class="btn btn--accent"
+                    id="btn-read-all"
+                    aria-label="Ler slide inteiro em voz alta, incluindo código"
+                    title="Ler tudo (R)"
+                >
+                    🔊 Ler Slide Inteiro
+                </button>
+            </div>
+
+            <div style="text-align: center; margin-top: var(--spacing-sm);">
+                <button
+                    class="btn btn--primary"
+                    id="btn-open-qa"
+                    aria-label="Abrir Duelo de Lógica para aplicar os conhecimentos"
+                    style="display: none;"
+                >
+                    🧠 Ir para Desafios de Lógica!
+                </button>
+            </div>
+        </section>
+
+        <!-- ======================================================== -->
+        <!-- DUELO DE LÓGICA E IA                                     -->
+        <!-- ======================================================== -->
+        <section class="qa-container" id="qa-container" style="display: none;" aria-labelledby="qa-title">
+            <h2 id="qa-title" style="margin-bottom: 1rem; border-bottom: 2px solid var(--border); padding-bottom: 0.5rem;">
+                🧠 Duelo de Lógica (Você vs IA)
+            </h2>
+            <div id="qa-list" class="qa-list" aria-live="polite">
+                <!-- Atividades Injetadas pelo JavaScript -->
+            </div>
+            <div style="margin-top: 3rem; text-align: center;">
+                <button class="btn btn--secondary" id="btn-qa-back" aria-label="Voltar para a aula teórica">
+                    ← Encerrar Duelo e Retornar
+                </button>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- ========================================================
+         FOOTER — Referência de Atalhos de Teclado
+         ======================================================== -->
+    <footer class="app-footer" role="contentinfo">
+        <div class="shortcuts-panel" aria-label="Atalhos de teclado disponíveis">
+            <span class="shortcut"><kbd>←</kbd><kbd>→</kbd> Navegar slides</span>
+            <span class="shortcut"><kbd>Espaço</kbd> Play/Pause</span>
+            <span class="shortcut"><kbd>S</kbd> Parar</span>
+            <span class="shortcut"><kbd>R</kbd> Ler tudo</span>
+            <span class="shortcut"><kbd>C</kbd> Ler código</span>
+            <span class="shortcut"><kbd>T</kbd> Ler título</span>
+            <span class="shortcut"><kbd>+</kbd><kbd>−</kbd> Velocidade</span>
+            <span class="shortcut"><kbd>F</kbd> Fonte +</span>
+            <span class="shortcut"><kbd>H</kbd> Ajuda</span>
+            <span class="shortcut" style="margin-left: auto;">
+                <a href="/tutor" style="color: var(--text-secondary); text-decoration: none; font-size: 0.8rem;"
+                   aria-label="Painel do Tutor - gerenciar aulas">
+                    ⚙️ Tutor
+                </a>
+            </span>
+        </div>
+    </footer>
+
+    <!-- ========================================================
+         JavaScript Modules
+         ======================================================== -->
+    <script src="{{ url_for('static', filename='js/tts_controller.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/slide_viewer.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/accessibility.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+
+</body>
+</html>

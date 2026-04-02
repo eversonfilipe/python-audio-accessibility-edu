@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Painel do Tutor — Gerenciamento de aulas do sistema de acessibilidade educacional.">
+    <title>Painel do Tutor — Trilha TEC</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/tutor.css') }}">
+</head>
+<body>
+
+    <!-- ========================================================
+         HEADER
+         ======================================================== -->
+    <header class="app-header" role="banner">
+        <div class="app-header__title">
+            <span class="app-header__title-icon" aria-hidden="true">⚙️</span>
+            <h1>Painel do Tutor</h1>
+        </div>
+        <div class="app-header__lesson-info">
+            <a href="/" class="btn btn--secondary" id="btn-back-home" style="font-size: 0.85rem; padding: 0.4rem 1rem;">
+                ← Voltar para Aulas
+            </a>
+        </div>
+    </header>
+
+    <!-- ========================================================
+         MAIN CONTENT
+         ======================================================== -->
+    <main class="tutor-main" role="main">
+
+        <!-- Barra de Ações -->
+        <section class="tutor-toolbar" aria-label="Ações">
+            <h2 class="sr-only">Ações do Tutor</h2>
+
+            <button class="btn btn--primary" id="btn-new-lesson" aria-label="Criar nova aula">
+                ➕ Nova Aula
+            </button>
+
+            <button class="btn btn--secondary" id="btn-reload-lessons" aria-label="Recarregar aulas do disco">
+                🔄 Recarregar
+            </button>
+
+            <span class="tutor-status" id="tutor-status" aria-live="polite"></span>
+        </section>
+
+        <!-- ====================================================
+             LISTA DE AULAS
+             ==================================================== -->
+        <section class="tutor-section" aria-labelledby="section-lessons-title">
+            <h2 id="section-lessons-title">📚 Aulas Cadastradas</h2>
+
+            <div class="tutor-lessons-list" id="lessons-list" role="list" aria-label="Lista de aulas">
+                <!-- Aulas são inseridas via JavaScript -->
+            </div>
+        </section>
+
+        <!-- ====================================================
+             MODAL: CRIAR AULA
+             ==================================================== -->
+        <div class="modal-overlay" id="modal-create" role="dialog" aria-modal="true" aria-labelledby="modal-create-title" style="display: none;">
+            <div class="modal-content">
+                <h2 id="modal-create-title">➕ Criar Nova Aula</h2>
+
+                <div class="form-group">
+                    <label for="create-lesson-id">ID da Aula (nome do arquivo):</label>
+                    <input type="text" id="create-lesson-id" class="input-accessible"
+                           placeholder="ex: aula_02_variaveis_python"
+                           aria-describedby="create-id-help">
+                    <small id="create-id-help" class="form-help">
+                        Use letras minúsculas, números e underscores. Este será o nome do arquivo .json.
+                    </small>
+                </div>
+
+                <div class="form-group">
+                    <label for="create-template-type">Template:</label>
+                    <select id="create-template-type" class="select-accessible">
+                        <option value="python">🐍 Python</option>
+                        <option value="html">🌐 HTML</option>
+                        <option value="css">🎨 CSS</option>
+                        <option value="javascript">⚡ JavaScript</option>
+                        <option value="vazio">📄 Vazio</option>
+                    </select>
+                </div>
+
+                <div class="modal-actions">
+                    <button class="btn btn--primary" id="btn-confirm-create">Criar Aula</button>
+                    <button class="btn btn--secondary" id="btn-cancel-create">Cancelar</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- ====================================================
+             MODAL: CONFIRMAR EXCLUSÃO
+             ==================================================== -->
+        <div class="modal-overlay" id="modal-delete" role="dialog" aria-modal="true" aria-labelledby="modal-delete-title" style="display: none;">
+            <div class="modal-content">
+                <h2 id="modal-delete-title">⚠️ Confirmar Exclusão</h2>
+                <p id="modal-delete-message">Tem certeza que deseja excluir esta aula? Esta ação não pode ser desfeita.</p>
+
+                <div class="modal-actions">
+                    <button class="btn btn--accent" id="btn-confirm-delete">Sim, Excluir</button>
+                    <button class="btn btn--secondary" id="btn-cancel-delete">Cancelar</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- ====================================================
+             EDITOR DE AULA (aparece ao editar)
+             ==================================================== -->
+        <section class="tutor-section tutor-editor-section" id="editor-section" style="display: none;" aria-labelledby="editor-title">
+            <div class="editor-header">
+                <h2 id="editor-title">✏️ Editando: <span id="editor-lesson-name"></span></h2>
+                <div class="editor-header__actions">
+                    <button class="btn btn--primary" id="btn-save-lesson">💾 Salvar</button>
+                    <button class="btn btn--secondary" id="btn-add-slide">➕ Novo Slide</button>
+                    <button class="btn btn--secondary" id="btn-close-editor">✖ Fechar</button>
+                </div>
+            </div>
+
+            <!-- Metadados da Aula -->
+            <div class="editor-meta">
+                <div class="form-group form-group--inline">
+                    <label for="editor-lesson-title">Título da Aula:</label>
+                    <input type="text" id="editor-lesson-title" class="input-accessible" placeholder="Título da aula">
+                </div>
+                <div class="form-group form-group--inline">
+                    <label for="editor-lesson-subject">Disciplina:</label>
+                    <select id="editor-lesson-subject" class="select-accessible">
+                        <option value="python">🐍 Python</option>
+                        <option value="html">🌐 HTML</option>
+                        <option value="css">🎨 CSS</option>
+                        <option value="javascript">⚡ JavaScript</option>
+                        <option value="geral">📚 Geral</option>
+                    </select>
+                </div>
+            </div>
+
+            <!-- Lista de Slides (editor) -->
+            <div class="editor-slides" id="editor-slides" aria-label="Slides da aula">
+                <!-- Slides são inseridos via JavaScript -->
+            </div>
+
+            <!-- Seção de Gerenciamento das Perguntas Duelo Q&A (Visível para o Tutor) -->
+            <div class="editor-header" style="margin-top: 3rem; border-top: 2px dashed var(--border); padding-top: 1rem;">
+                <h3 style="color: var(--accent);">🧩 Perguntas P/ Exercício Lógico (Sessão Secundária)</h3>
+                <button class="btn btn--secondary" id="btn-add-question">➕ Inserir Novo Desafio</button>
+            </div>
+            
+            <div class="editor-questions" id="editor-questions" aria-label="Perguntas Práticas Adicionais">
+                <!-- Painéis injetados via JS -->
+            </div>
+
+            <!-- Editor JSON Raw (toggle) -->
+            <div class="editor-json-section">
+                <button class="btn btn--secondary" id="btn-toggle-json">📝 Editar JSON Diretamente</button>
+                <div id="json-editor-wrapper" style="display: none;">
+                    <label for="json-editor" class="sr-only">Editor JSON da aula</label>
+                    <textarea id="json-editor" class="json-editor" rows="20"
+                              aria-label="Editor JSON da aula"
+                              spellcheck="false"></textarea>
+                    <div class="json-editor-actions">
+                        <button class="btn btn--primary" id="btn-apply-json">✅ Aplicar JSON</button>
+                        <button class="btn btn--secondary" id="btn-format-json">🔧 Formatar JSON</button>
+                        <span class="json-status" id="json-status" aria-live="polite"></span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Avisos -->
+            <div class="editor-warnings" id="editor-warnings" role="alert" style="display: none;">
+            </div>
+        </section>
+
+    </main>
+
+    <!-- ========================================================
+         JavaScript
+         ======================================================== -->
+    <script src="{{ url_for('static', filename='js/tutor.js') }}"></script>
+
+</body>
+</html>

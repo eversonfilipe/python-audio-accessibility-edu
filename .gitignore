@@ -42,3 +42,4 @@ venv.bak/
 # Project specific
 docs/_build/
 tests/.pytest_cache/
+src/static/audio/

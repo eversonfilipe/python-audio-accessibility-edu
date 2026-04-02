@@ -1,0 +1,32 @@
+version: "3.8"
+
+services:
+  trilhatec-accessibility:
+    build: .
+    container_name: python-audio-accessibility-edu
+    ports:
+      - "5000:5000"
+    environment:
+      - FLASK_ENV=production
+      # Mapeia para a máquina Hospedeira caso o Ollama rode por fora do Docker no Lab Windows/Linux
+      - OLLAMA_API_URL=http://host.docker.internal:11434/api/chat
+    devices:
+      # Repassa a Placa de Som Host para o Container se for usar as tecnologias TTS Python Nativas (PyttsX3/Gtts)
+      - /dev/snd:/dev/snd
+    restart: unless-stopped
+    volumes:
+      # Volume persistente garantindo que edições de JSON da Sala fiquem gravados!
+      - ./src/lessons:/app/src/lessons
+
+  # Nota Técnica do Tutor: Se a escola for rodar num PC robusto e quiser embarcar o Ollama dentro
+  # # da Docker, vc pode descomentar a linha abaixo. 
+  # ollama-engine:
+  #   image: ollama/ollama
+  #   container_name: ollama
+  #   ports:
+  #     - "11434:11434"
+  #   volumes:
+  #     - ollama_data:/root/.ollama
+
+volumes:
+  ollama_data:

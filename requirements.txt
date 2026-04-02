@@ -1,0 +1,14 @@
+# =============================================================
+# Python Audio Accessibility Edu — Dependências
+# =============================================================
+# Framework web
+flask>=3.0,<4.0
+
+# TTS offline (usa SAPI5 no Windows, espeak no Linux)
+pyttsx3>=2.90,<3.0
+
+# TTS neural online (Microsoft Edge voices) — fallback
+edge-tts>=6.1,<7.0
+
+# Servidor WSGI para produção
+waitress>=3.0,<4.0

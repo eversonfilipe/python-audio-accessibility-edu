@@ -1,0 +1,66 @@
+{
+    "questions": [
+        {
+            "id": "questao_1774914183911",
+            "text": "Me explique o que você aprendeu, suas expectativas, se você tem alguma dúvida."
+        },
+        {
+            "id": "questao_1774914207427",
+            "text": ""
+        }
+    ],
+    "slides": [
+        {
+            "audio_description": "Slide 1 de 5. Título: O que é Python. Este slide apresenta o conceito de linguagem de programação e introduz o Python como uma ferramenta para dar instruções ao computador.",
+            "code": null,
+            "code_description": null,
+            "content": "Python é uma linguagem de programação. Com ela, podemos dar instruções ao computador para ele fazer coisas, como calcular, exibir mensagens e muito mais.\n\nPython foi criada por Guido van Rossum em 1991 e é uma das linguagens mais populares do mundo por ser simples de aprender e muito poderosa.",
+            "id": 1,
+            "image_alt": null,
+            "notes": "Explicar de forma simples o que é uma linguagem de programação. Comparar com 'dar instruções a alguém em uma língua que ela entende'.",
+            "title": "O que é Python?"
+        },
+        {
+            "audio_description": "Slide 2 de 5. Título: Nosso Primeiro Comando: print. Este slide ensina o comando print, que exibe mensagens na tela. Contém um exemplo de código Python.",
+            "code": "print('Olá, mundo!')",
+            "code_description": "Este código usa o comando print para exibir a mensagem Olá, mundo! na tela do computador. O texto que queremos mostrar fica entre aspas simples, dentro dos parênteses.",
+            "content": "O comando print serve para exibir mensagens na tela. É o primeiro comando que todo programador aprende!\n\nPara usar o print, escrevemos a palavra print, abrimos parênteses, colocamos o texto entre aspas, e fechamos os parênteses.",
+            "id": 2,
+            "image_alt": null,
+            "notes": "Demonstrar print ao vivo. Pedir para os alunos digitarem e executarem.",
+            "title": "Nosso Primeiro Comando: print"
+        },
+        {
+            "audio_description": "Slide 3 de 5. Título: Variáveis: Guardando Informações. Este slide explica o conceito de variáveis como caixas para guardar dados. Contém um exemplo de código com duas variáveis e print.",
+            "code": "nome = 'Maria'\nidade = 16\nprint(nome)\nprint(idade)",
+            "code_description": "Este código cria duas variáveis: 'nome' que guarda o texto Maria, e 'idade' que guarda o número 16. Depois, usa o comando print para exibir o valor de cada variável na tela.",
+            "content": "Variáveis são como caixas onde guardamos informações. Podemos dar um nome para cada caixa e colocar diferentes tipos de dados dentro delas.\n\nPor exemplo, podemos guardar o nome de uma pessoa, a idade dela, ou qualquer outra informação que precisarmos usar depois no programa.",
+            "id": 3,
+            "image_alt": null,
+            "notes": "Usar analogia de caixas etiquetadas. Mostrar que a variável 'nome' guarda texto e 'idade' guarda número.",
+            "title": "Variáveis: Guardando Informações"
+        },
+        {
+            "audio_description": "Slide 4 de 5. Título: Recebendo Dados do Usuário: input. Este slide ensina o comando input, que permite ao programa receber informações do usuário. Contém um código que pede o nome e exibe uma saudação.",
+            "code": "nome = input('Qual é o seu nome? ')\nprint('Olá, ' + nome + '!')",
+            "code_description": "Este código pergunta ao usuário qual é o nome dele usando o comando input. A resposta é guardada na variável 'nome'. Depois, o programa exibe uma saudação personalizada usando print, juntando o texto Olá com o nome digitado.",
+            "content": "O comando input permite que o programa faça perguntas ao usuário e guarde a resposta em uma variável.\n\nQuando o programa encontra o comando input, ele para e espera que o usuário digite algo. Depois de pressionar Enter, a resposta fica guardada na variável.",
+            "id": 4,
+            "image_alt": null,
+            "notes": "Executar o código ao vivo e pedir que cada aluno digite seu nome. Explicar o conceito de concatenação de strings com o operador +.",
+            "title": "Recebendo Dados do Usuário: input"
+        },
+        {
+            "audio_description": "Slide 5 de 5, último slide. Título: Resumo da Aula. Este slide resume os quatro conceitos aprendidos: Python, print, variáveis e input. Contém um bloco de código com exemplos de todos os comandos vistos na aula.",
+            "code": "# Resumo dos comandos aprendidos\nprint('Olá, mundo!')\nnome = 'Maria'\nidade = 16\nresposta = input('Pergunta? ')",
+            "code_description": "Este bloco resume todos os comandos aprendidos na aula: print para exibir mensagens, variáveis para guardar texto e números, e input para receber dados do usuário.",
+            "content": "Nesta aula aprendemos:\n\n1. Python é uma linguagem de programação que permite dar instruções ao computador.\n\n2. O comando print exibe mensagens na tela.\n\n3. Variáveis são como caixas que guardam informações.\n\n4. O comando input permite que o usuário digite dados no programa.\n\nNa próxima aula, vamos aprender sobre números e operações matemáticas em Python!",
+            "id": 5,
+            "image_alt": null,
+            "notes": "Revisar cada conceito brevemente. Perguntar se há dúvidas. Mencionar o tema da próxima aula.",
+            "title": "Resumo da Aula"
+        }
+    ],
+    "subject": "python",
+    "title": "Aula 1 — Introdução ao Python"
+}
